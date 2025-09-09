@@ -58,7 +58,7 @@ function App() {
     );
   }
 
-  return (
+  // return (
     <div className="app">
       {isAuthenticated ? (
         // Show dashboard for authenticated users
