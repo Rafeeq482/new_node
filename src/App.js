@@ -71,7 +71,7 @@ function App() {
             <p>Simple and secure user authentication with React</p>
           </div>
           
-          {/* {currentView === 'login' ? (
+          {currentView === 'login' ? (
             <Login 
               onLoginSuccess={handleLoginSuccess}
               switchToRegister={switchToRegister}
@@ -80,7 +80,7 @@ function App() {
             <Register 
               switchToLogin={switchToLogin}
             />
-          )} */}
+          )}
         </div>
       )}
     </div>
