@@ -3,8 +3,8 @@
 
 import { Auth } from 'aws-amplify';
 
-// Note: If you're getting SECRET_HASH errors, disable the client secret
-// in your Cognito App Client settings. Web apps should not use client secrets.
+// ✅ Toggle this flag to simulate a 400 error on login
+const simulate400 = true;
 
 export const authService = {
   // Sign up a new user
@@ -33,13 +33,23 @@ export const authService = {
     }
   },
 
-  // Sign in user
+  // ✅ Simulate 400 error in sign-in (login)
   signIn: async (username, password) => {
     try {
+      if (simulate400) {
+        // Simulated 400 error
+        const error = new Error("Bad Request: Invalid login credentials");
+        error.status = 400;
+        throw error;
+      }
+
       const user = await Auth.signIn(username, password);
       return { success: true, data: user };
     } catch (error) {
-      return { success: false, error: error.message };
+      // Preserve real error or simulated one
+      const errorMessage = error.message || "An unknown error occurred";
+      const status = error.status || null;
+      return { success: false, error: errorMessage, status };
     }
   },
 
