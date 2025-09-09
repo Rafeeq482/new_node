@@ -6,53 +6,53 @@ import { Amplify } from 'aws-amplify';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
-import { authService } from './services/authService';
-import awsConfig from './config/awsConfig';
-import './App.css';
+// import { authService } from './services/authService';
+// import awsConfig from './config/awsConfig';
+// import './App.css';
 
-// Configure AWS Amplify with our Cognito settings
-Amplify.configure(awsConfig);
+// // Configure AWS Amplify with our Cognito settings
+// Amplify.configure(awsConfig);
 
-function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [currentView, setCurrentView] = useState('login'); // 'login' or 'register'
+// function App() {
+//   const [isAuthenticated, setIsAuthenticated] = useState(false);
+//   const [loading, setLoading] = useState(true);
+//   const [currentView, setCurrentView] = useState('login'); // 'login' or 'register'
 
-  // Check if user is already authenticated when app loads
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      const authenticated = await authService.isAuthenticated();
-      setIsAuthenticated(authenticated);
-      setLoading(false);
-    };
+//   // Check if user is already authenticated when app loads
+//   useEffect(() => {
+//     const checkAuthStatus = async () => {
+//       const authenticated = await authService.isAuthenticated();
+//       setIsAuthenticated(authenticated);
+//       setLoading(false);
+//     };
 
-    checkAuthStatus();
-  }, []);
+//     checkAuthStatus();
+//   }, []);
 
-  // Handle successful login
-  const handleLoginSuccess = (user) => {
-    console.log('Login successful:', user.username);
-    setIsAuthenticated(true);
-  };
+//   // Handle successful login
+//   const handleLoginSuccess = (user) => {
+//     console.log('Login successful:', user.username);
+//     setIsAuthenticated(true);
+//   };
 
-  // Handle logout
-  const handleLogout = () => {
-    console.log('User logged out');
-    setIsAuthenticated(false);
-    setCurrentView('login');
-  };
+//   // Handle logout
+//   const handleLogout = () => {
+//     console.log('User logged out');
+//     setIsAuthenticated(false);
+//     setCurrentView('login');
+//   };
 
-  // Switch between login and register views
-  const switchToRegister = () => setCurrentView('register');
-  const switchToLogin = () => setCurrentView('login');
+//   // Switch between login and register views
+//   const switchToRegister = () => setCurrentView('register');
+//   const switchToLogin = () => setCurrentView('login');
 
-  // Show loading spinner while checking authentication
-  if (loading) {
-    return (
-      <div className="app">
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Loading...</p>
+//   // Show loading spinner while checking authentication
+//   if (loading) {
+//     return (
+//       <div className="app">
+//         <div className="loading-container">
+//           <div className="loading-spinner"></div>
+//           <p>Loading...</p>
         </div>
       </div>
     );
