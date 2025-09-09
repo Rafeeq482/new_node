@@ -58,20 +58,20 @@ function App() {
     );
   }
 
-// Simulate a 404 error for testing rollback
-const simulate404 = true;
+// // Simulate a 404 error for testing rollback
+// const simulate404 = true;
 
-if (simulate404) {
-  // This will render a 404-style error in the UI
-  return (
-    <div className="app">
-      <div className="error-page">
-        <h1>404 - Page Not Found</h1>
-        <p>This page does not exist (simulated error for rollback).</p>
-      </div>
-    </div>
-  );
-}
+// if (simulate404) {
+//   // This will render a 404-style error in the UI
+//   return (
+//     <div className="app">
+//       <div className="error-page">
+//         <h1>404 - Page Not Found</h1>
+//         <p>This page does not exist (simulated error for rollback).</p>
+//       </div>
+//     </div>
+//   );
+// }
 
 
   return (
