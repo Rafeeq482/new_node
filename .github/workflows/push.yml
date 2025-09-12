@@ -30,8 +30,9 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "build/*"
+          source: "build/**"
           target: "/tmp/new_build"
+          strip_components: 1
 
       - name: Deploy on server
         uses: appleboy/ssh-action@v0.1.6
