@@ -53,4 +53,4 @@ jobs:
             echo "=== Deploying new build ==="
             mv $NEW_BUILD $APP_DIR/build
 
-            echo "✅ Deployment successful!"
+            echo "✅ Deployment successful no issues found."
