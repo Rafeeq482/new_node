@@ -1,4 +1,4 @@
-name: Deploy React Frontend
+name: Deploy React Frontend (Safe Backup)
 
 on:
   push:
@@ -13,36 +13,44 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v0.1.6
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build React app
+        run: npm run build
+
+      - name: Upload build to server
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
+          source: "build/*"
+          target: "/tmp/new_build"
+
+      - name: Deploy on server
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            echo "✅ SSH done"
-            echo "=== Starting deployment ==="
             APP_DIR="/var/www/html/Nepali-Vivah-Frontend"
-            BACKUP_DIR="/var/www/html/build_backup"
+            NEW_BUILD="/tmp/new_build"
+            BACKUP_DIR="$APP_DIR/build_backup"
 
-            # 1. Clone repo fresh
-            echo "Cloning repo into $APP_DIR"
-            rm -rf $APP_DIR
-            git clone -b main git@github.com:YOUR_USERNAME/YOUR_REPO.git $APP_DIR
-
-            cd $APP_DIR
-            
-            # 2. Backup existing build if any
+            echo "=== Backing up old build ==="
+            rm -rf $BACKUP_DIR
             if [ -d "$APP_DIR/build" ]; then
-              echo "Backing up existing build..."
-              rm -rf $BACKUP_DIR
               mv $APP_DIR/build $BACKUP_DIR
             fi
 
-            # 3. Install deps & build
-            echo "Installing dependencies and building..."
-            npm install --legacy-peer-deps
-            npm run build
+            echo "=== Deploying new build ==="
+            mv $NEW_BUILD $APP_DIR/build
 
-            echo "✅ Deployment completed successfully"
+            echo "✅ Deployment successful!"
