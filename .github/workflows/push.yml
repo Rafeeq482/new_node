@@ -1,0 +1,47 @@
+name: Deploy React Frontend
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            echo "=== Starting deployment ==="
+            APP_DIR="/var/www/html/Nepali-Vivah-Frontend"
+            BACKUP_DIR="/var/www/html/build_backup"
+
+            # 1. Clone repo fresh
+            echo "Cloning repo into $APP_DIR"
+            rm -rf $APP_DIR
+            git clone -b main git@github.com:YOUR_USERNAME/YOUR_REPO.git $APP_DIR
+
+            cd $APP_DIR
+
+            # 2. Backup existing build if any
+            if [ -d "$APP_DIR/build" ]; then
+              echo "Backing up existing build..."
+              rm -rf $BACKUP_DIR
+              mv $APP_DIR/build $BACKUP_DIR
+            fi
+
+            # 3. Install deps & build
+            echo "Installing dependencies and building..."
+            npm install --legacy-peer-deps
+            npm run build
+
+            echo "✅ Deployment completed successfully"
