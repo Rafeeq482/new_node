@@ -15,8 +15,8 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      # 2. SSH into server and build
-      - name: Build React on EC2
+      # 2. SSH into server, build, and backup
+      - name: Build React on EC2 with Backup
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -24,8 +24,9 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             # Go to your project directory
-            cd /var/www/html/new_node
-            
+            APP_DIR="/var/www/html/Nepali-Vivah-Frontend"
+            cd $APP_DIR
+
             # Pull latest changes
             git fetch origin
             git reset --hard origin/main
@@ -36,4 +37,18 @@ jobs:
             # Build React app
             CI=false npm run build
 
-            echo "✅ Build completed on server"
+            # Backup previous build
+            BACKUP_DIR="$APP_DIR/build_backup"
+            echo "=== Removing previous backup ==="
+            rm -rf $BACKUP_DIR
+
+            echo "=== Backing up current build ==="
+            if [ -d "$APP_DIR/build" ]; then
+              mv $APP_DIR/build $BACKUP_DIR
+            fi
+
+            # Deploy new build
+            echo "=== Deploying new build ==="
+            mv build $APP_DIR/build
+
+            echo "✅ Build and backup completed on server"
