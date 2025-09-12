@@ -83,7 +83,7 @@ function App() {
         // Show authentication forms for non-authenticated users
         <div className="auth-wrapper">
           <div className="app-header">
-            <h1>AWS Cognito Authentication Pipeline testing Compeleted</h1>
+            <h1>AWS Cognito Authentication Pipeline testing </h1>
             <p>Simple and secure user authentication with React</p>
           </div>
           
