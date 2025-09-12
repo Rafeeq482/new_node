@@ -51,6 +51,8 @@ jobs:
             fi
 
             echo "=== Deploying new build ==="
-            mv $NEW_BUILD $APP_DIR/build
+            rm -rf $APP_DIR/build
+            mkdir -p $APP_DIR/build
+            mv $NEW_BUILD/* $APP_DIR/build/
 
-            echo "✅ Deployment successful no issues found."
+            echo "✅ Deployment successful"
