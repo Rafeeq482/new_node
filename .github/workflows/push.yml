@@ -36,9 +36,9 @@ jobs:
       - name: Deploy on server
         uses: appleboy/ssh-action@v0.1.6
         with:
-          host: ${{ secrets.SERVER_IP }}
+          host: ${{ secrets.EC2_HOST }}
           username: ubuntu
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             APP_DIR="/var/www/html/new_node"
             NEW_BUILD="/tmp/new_build"
