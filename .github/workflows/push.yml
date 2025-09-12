@@ -21,6 +21,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
+            echo "✅ SSH done"
             echo "=== Starting deployment ==="
             APP_DIR="/var/www/html/Nepali-Vivah-Frontend"
             BACKUP_DIR="/var/www/html/build_backup"
@@ -31,7 +32,7 @@ jobs:
             git clone -b main git@github.com:YOUR_USERNAME/YOUR_REPO.git $APP_DIR
 
             cd $APP_DIR
-
+            
             # 2. Backup existing build if any
             if [ -d "$APP_DIR/build" ]; then
               echo "Backing up existing build..."
