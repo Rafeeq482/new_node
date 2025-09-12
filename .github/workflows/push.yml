@@ -1,4 +1,4 @@
-name: Deploy React Frontend (Safe Backup)
+name: Build React on EC2
 
 on:
   push:
@@ -6,56 +6,34 @@ on:
       - main
   workflow_dispatch:
 
-
 jobs:
-  deploy:
+  build-on-server:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      # 1. Checkout repo (optional, for logging or copying files)
+      - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build React app
-        run: npm run build
-
-      - name: Upload build to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "build/**"
-          target: "/tmp/new_build"
-          strip_components: 1
-
-      - name: Deploy on server
+      # 2. SSH into server and build
+      - name: Build React on EC2
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            APP_DIR="/var/www/html/new_node"
-            NEW_BUILD="/tmp/new_build"
-            BACKUP_DIR="$APP_DIR/build_backup"
+            # Go to your project directory
+            cd /var/www/html/new_node
+            
+            # Pull latest changes
+            git fetch origin
+            git reset --hard origin/main
 
-            echo "=== Backing up old build ==="
-            rm -rf $BACKUP_DIR
-            if [ -d "$APP_DIR/build" ]; then
-              mv $APP_DIR/build $BACKUP_DIR
-            fi
+            # Install dependencies
+            npm ci
 
-            echo "=== Deploying new build ==="
-            rm -rf $APP_DIR/build
-            mkdir -p $APP_DIR/build
-            mv $NEW_BUILD/* $APP_DIR/build/
+            # Build React app
+            CI=false npm run build
 
-            echo "✅ Deployment successful"
+            echo "✅ Build completed on server"
