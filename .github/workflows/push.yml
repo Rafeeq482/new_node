@@ -1,4 +1,4 @@
-name: Deploy React Frontend (Build on Server)
+name: Deploy React Frontend (Build on Server - Test Only)
 
 on:
   push:
@@ -27,34 +27,30 @@ jobs:
           strip_components: 0
           rm: true
 
-      # 3. Build & Deploy on server with backup
-      - name: Build and Deploy on server
+      # 3. Build & Deploy on server (to testbuild only)
+      - name: Build and Deploy (Test Build)
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            APP_DIR="/var/www/html/new_node"
+            APP_DIR="/var/www/html"
+            TEST_DIR="$APP_DIR/testbuild"
             SRC_DIR="/tmp/react_source"
-            BACKUP_DIR="$APP_DIR/build_backup"
 
-            echo "=== Backing up old build ==="
-            rm -rf $BACKUP_DIR
-            if [ -d "$APP_DIR/build" ]; then
-              mv $APP_DIR/build $BACKUP_DIR
-            fi
+            echo "=== Cleaning testbuild folder ==="
+            rm -rf $TEST_DIR
+            mkdir -p $TEST_DIR
 
             echo "=== Installing dependencies ==="
             cd $SRC_DIR
             npm ci
 
-            echo "=== Building React app on server ==="
+            echo "=== Building React app (Test Build) ==="
             CI=false npm run build
 
-            echo "=== Deploying new build ==="
-            rm -rf $APP_DIR/build
-            mkdir -p $APP_DIR/build
-            mv $SRC_DIR/build/* $APP_DIR/build/
+            echo "=== Deploying test build ==="
+            mv $SRC_DIR/build/* $TEST_DIR/
 
-            echo "✅ Deployment successful"
+            echo "✅ Test build deployed at $TEST_DIR"
