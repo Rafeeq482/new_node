@@ -1,4 +1,4 @@
-name: Build React on EC2
+name: Deploy React Frontend (Safe Backup)
 
 on:
   push:
@@ -7,48 +7,60 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-on-server:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repo (optional, for logging or copying files)
-      - name: Checkout repo
+      # 1. Checkout code
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. SSH into server, build, and backup
-      - name: Build React on EC2 with Backup
+      # 2. Setup Node.js
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. Build React app (ignore CI warnings)
+      - name: Build React app
+        run: CI=false npm run build
+
+      # 5. Upload build to server
+      - name: Upload build to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "build/**"
+          target: "/tmp/new_build"
+          strip_components: 1
+
+      # 6. Deploy on server with backup
+      - name: Deploy on server
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # Go to your project directory
-            APP_DIR="/var/www/html/Nepali-Vivah-Frontend"
-            cd $APP_DIR
-
-            # Pull latest changes
-            git fetch origin
-            git reset --hard origin/main
-
-            # Install dependencies
-            npm ci
-
-            # Build React app
-            CI=false npm run build
-
-            # Backup previous build
+            APP_DIR="/var/www/html/new_node"
+            NEW_BUILD="/tmp/new_build"
             BACKUP_DIR="$APP_DIR/build_backup"
-            echo "=== Removing previous backup ==="
-            rm -rf $BACKUP_DIR
 
-            echo "=== Backing up current build ==="
+            echo "=== Backing up old build ==="
+            rm -rf $BACKUP_DIR
             if [ -d "$APP_DIR/build" ]; then
               mv $APP_DIR/build $BACKUP_DIR
             fi
 
-            # Deploy new build
             echo "=== Deploying new build ==="
-            mv build $APP_DIR/build
+            rm -rf $APP_DIR/build
+            mkdir -p $APP_DIR/build
+            mv $NEW_BUILD/* $APP_DIR/build/
 
-            echo "✅ Build and backup completed on server"
+            echo "✅ Deployment successful"
