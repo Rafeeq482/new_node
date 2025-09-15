@@ -1,4 +1,4 @@
-name: Deploy React Frontend (Safe Backup)
+name: Deploy React Frontend (Build on Server)
 
 on:
   push:
@@ -15,33 +15,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. Setup Node.js
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20
-
-      # 3. Install dependencies
-      - name: Install dependencies
-        run: npm ci
-
-      # 4. Build React app (ignore CI warnings)
-      - name: Build React app
-        run: CI=false npm run build
-
-      # 5. Upload build to server
-      - name: Upload build to server
+      # 2. Upload source code (exclude node_modules & build for efficiency)
+      - name: Upload source to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "build/**"
-          target: "/tmp/new_build"
-          strip_components: 1
+          source: "."
+          target: "/tmp/react_source"
+          strip_components: 0
+          rm: true
 
-      # 6. Deploy on server with backup
-      - name: Deploy on server
+      # 3. Build & Deploy on server with backup
+      - name: Build and Deploy on server
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -49,7 +36,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             APP_DIR="/var/www/html/new_node"
-            NEW_BUILD="/tmp/new_build"
+            SRC_DIR="/tmp/react_source"
             BACKUP_DIR="$APP_DIR/build_backup"
 
             echo "=== Backing up old build ==="
@@ -58,9 +45,16 @@ jobs:
               mv $APP_DIR/build $BACKUP_DIR
             fi
 
+            echo "=== Installing dependencies ==="
+            cd $SRC_DIR
+            npm ci
+
+            echo "=== Building React app on server ==="
+            CI=false npm run build
+
             echo "=== Deploying new build ==="
             rm -rf $APP_DIR/build
             mkdir -p $APP_DIR/build
-            mv $NEW_BUILD/* $APP_DIR/build/
+            mv $SRC_DIR/build/* $APP_DIR/build/
 
             echo "✅ Deployment successful"
